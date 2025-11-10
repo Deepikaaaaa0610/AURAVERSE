@@ -52,3 +52,33 @@ def merge_schemas(a: Dict[str, Any], b: Dict[str, Any]) -> Dict[str, Any]:
             else:
                 merged[k] = ta
     return merged
+
+def transform_to_flat_schema(nested_schema: Dict[str, Any], prefix: str = "") -> Dict[str, Any]:
+    """
+    Transforms the custom nested schema format into a flattened, dot-notation format
+    for easier readability and 'segregation' (e.g., "project.name": "str").
+    """
+    flat_schema = {}
+    for k, v in nested_schema.items():
+        full_key = f"{prefix}{k}"
+        field_type = v.get("type")
+
+        if field_type == "object":
+            # Recursively flatten nested schema
+            nested_flat = transform_to_flat_schema(v["schema"], full_key + ".")
+            flat_schema.update(nested_flat)
+        elif field_type == "array":
+            # For arrays, show the array type and the item types
+            items = v.get("items")
+            # If items is a list of types, join them
+            item_type_str = ", ".join(items) if isinstance(items, list) else str(items)
+            flat_schema[full_key] = f"array[{item_type_str}]"
+        elif field_type == "multiple":
+            # For multiple types, list them
+            types = ", ".join(v.get("types", []))
+            flat_schema[full_key] = f"multiple[{types}]"
+        else:
+            # Primitive type
+            flat_schema[full_key] = field_type
+            
+    return flat_schema
