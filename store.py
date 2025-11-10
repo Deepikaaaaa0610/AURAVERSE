@@ -26,3 +26,8 @@ def save_schema(schema: dict):
         {"$set": {"schema": schema}},
         upsert=True
     )
+
+def get_all_docs():
+    """Retrieves all documents from the data collection, excluding MongoDB's _id for clean JSON."""
+    # Find all documents in the 'docs' collection and convert the cursor to a list
+    return list(db[DATA_COLLECTION].find({}, {"_id": 0}))
