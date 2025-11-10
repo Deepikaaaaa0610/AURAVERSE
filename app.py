@@ -1,4 +1,4 @@
-# app.py
+# app.py (MODIFIED)
 from fastapi import FastAPI, Request
 from schema_utils import infer_schema, merge_schemas
 from store import save_doc, get_schema, save_schema
@@ -18,3 +18,10 @@ async def ingest(request: Request):
         save_doc("docs", d)
     save_schema(global_schema)
     return {"status": "ok", "merged_schema": global_schema}
+
+# NEW: Add a route to retrieve the current global schema
+@app.get("/schema")
+def get_current_schema():
+    """Retrieves the current dynamic schema stored in the database."""
+    global_schema = get_schema()
+    return global_schema
