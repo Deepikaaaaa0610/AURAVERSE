@@ -1,7 +1,8 @@
-# dashboard.py (MODIFIED for single batch ingest)
+# dashboard.py (MODIFIED - New button added at the bottom)
 import streamlit as st
 import requests
 import json
+from schema_utils import transform_to_flat_schema # Ensure this is present
 
 st.title("Dynamic ETL Demo")
 
@@ -20,7 +21,6 @@ if uploaded_files:
                 payload = json.load(uploaded_file)
                 
                 # If the payload is a list (array of documents), extend the list.
-                # If it's a single object, append it.
                 if isinstance(payload, list):
                     all_documents.extend(payload)
                     st.success(f"✅ Extracted {len(payload)} documents from: {uploaded_file.name}")
@@ -43,8 +43,12 @@ if uploaded_files:
                 
                 if resp.status_code == 200:
                     st.success("🎉 Ingestion complete! All documents processed and global schema updated.")
-                    st.write("Final Ingest response (includes singular merged schema):")
-                    st.json(resp.json())
+                    response_data = resp.json()
+                    st.write("Final Ingest response (Flattened Schema for Readability):")
+                    
+                    # Use the flattener function for cleaner output
+                    clean_schema = transform_to_flat_schema(response_data.get("merged_schema", {}))
+                    st.json(clean_schema)
                 else:
                     st.error(f"❌ Upload failed. Status: {resp.status_code}. Check if the FastAPI server is running.")
             
@@ -58,9 +62,29 @@ if st.button("Show Stored Global Schema"):
         resp = requests.get("http://127.0.0.1:8000/schema")
         
         if resp.status_code == 200:
-            st.write("Current Global Schema from DB:")
-            st.json(resp.json())
+            schema_data = resp.json()
+            st.write("Current Global Schema from DB (Flattened View):")
+            
+            # Use the flattener function for cleaner output
+            clean_schema = transform_to_flat_schema(schema_data)
+            st.json(clean_schema)
         else:
             st.error("❌ Failed to fetch schema. Check if the FastAPI server is running.")
     except requests.exceptions.ConnectionError:
-        st.error("❌ Could not connect to the FastAPI server. Please ensure 'app.py' is running (uvicorn app:app --reload).")vicorn app:app --reload).")
+        st.error("❌ Could not connect to the FastAPI server. Please ensure 'app.py' is running (uvicorn app:app --reload).")
+
+# 🆕 NEW BLOCK: Button to show the raw data
+if st.button("Show Stored Documents (Raw Data)"):
+    # This hits the new /data endpoint we created in app.py
+    try:
+        resp = requests.get("http://127.0.0.1:8000/data")
+        
+        if resp.status_code == 200:
+            data_list = resp.json()
+            st.subheader(f"Current Raw Documents from DB ({len(data_list)} documents):")
+            # Display the list of documents
+            st.json(data_list) 
+        else:
+            st.error("❌ Failed to fetch data. Check if the FastAPI server is running.")
+    except requests.exceptions.ConnectionError:
+        st.error("❌ Could not connect to the FastAPI server. Please ensure 'app.py' is running (uvicorn app:app --reload).")ease ensure 'app.py' is running (uvicorn app:app --reload).")vicorn app:app --reload).")
