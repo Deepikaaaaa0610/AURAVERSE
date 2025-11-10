@@ -1,0 +1,10 @@
+{
+  "name": "Akasha",
+  "startup": "Auraverse",
+  "funding": 200000,
+  "skills": ["Python", "AI"],
+  "project": {
+    "name": "Auraverse AI",
+    "members": 3
+  }
+}

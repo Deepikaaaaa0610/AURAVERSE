@@ -1,0 +1,10 @@
+{
+  "name": "Akasha",
+  "age": 20,
+  "college": "IIT Madras",
+  "skills": ["Python", "Machine Learning", "Chess"],
+  "project": {
+    "name": "Auraverse",
+    "type": "Startup"
+  }
+}
